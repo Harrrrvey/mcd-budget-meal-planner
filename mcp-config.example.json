@@ -1,0 +1,14 @@
+{
+  "_comment": "脱敏后的麦当劳 MCP 配置示例。只允许环境变量占位符，绝对不要写入真实 Token。",
+  "_usage": "把本文件内容合并进 WorkBuddy 的 MCP 配置（~/.workbuddy/mcp.json 的 mcpServers 节点），并把 ${MCD_MCP_TOKEN} 换成你自己的麦当劳 MCP Token。也可在 WorkBuddy 左侧边栏【专家·技能·连接器】→【连接器】→ 右上角【自定义连接器】→【配置MCP】中粘贴。",
+  "_token_howto": "MCP Token 申请入口见麦当劳 MCP 官方仓库 https://github.com/M-China/mcd-mcp-server 。注意：申请时使用的手机号与麦当劳会员手机号建议保持一致。",
+  "mcpServers": {
+    "mcd-mcp": {
+      "type": "streamablehttp",
+      "url": "https://mcp.mcd.cn",
+      "headers": {
+        "Authorization": "Bearer ${MCD_MCP_TOKEN}"
+      }
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "_fixture": {
+    "level": "synthetic",
+    "warning": "完全模拟数据，不代表任何真实接口返回。仅用于本地逻辑测试。",
+    "purpose": "覆盖：可用券、无适用商品编码的券、未生效券、已过期券、带 labels 的券。"
+  },
+  "success": true,
+  "code": 200,
+  "data": [
+    {
+      "couponId": "W2001",
+      "couponCode": "WC-2001",
+      "title": "9.9元中杯冰美式",
+      "tradeStartDate": "2026-10-01 00:00:00",
+      "tradeEndDate": "2026-12-31 23:59:59",
+      "products": [{ "productName": "可乐中杯", "productCode": "9900008751" }],
+      "instructions": { "labels": [{ "text": "到店专用" }] }
+    },
+    {
+      "couponId": "W2002",
+      "couponCode": "WC-2002",
+      "title": "满30减5",
+      "tradeStartDate": "2026-10-01",
+      "tradeEndDate": "2026-12-31"
+    },
+    {
+      "couponId": "W2003",
+      "couponCode": "WC-2003",
+      "title": "尚未生效的套餐券",
+      "tradeStartDate": "2026-11-01 00:00:00",
+      "tradeEndDate": "2026-12-31 23:59:59",
+      "products": [{ "productName": "派", "productCode": "9900015165" }]
+    },
+    {
+      "couponId": "W2004",
+      "couponCode": "WC-2004",
+      "title": "已过期券",
+      "tradeStartDate": "2026-01-01 00:00:00",
+      "tradeEndDate": "2026-09-30 23:59:59",
+      "products": [{ "productName": "大堡口福三件套", "productCode": "9900015160" }]
+    },
+    {
+      "couponId": "W2005",
+      "couponCode": "WC-2005",
+      "title": "未到使用时间的券",
+      "tradeEndDate": "2026-12-31 23:59:59",
+      "products": [{ "productName": "派", "productCode": "9900015165" }],
+      "instructions": { "labels": [{ "text": "未到使用时间" }] }
+    }
+  ]
+}

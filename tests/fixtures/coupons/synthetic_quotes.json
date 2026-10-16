@@ -1,0 +1,83 @@
+{
+  "_fixture": {
+    "level": "synthetic",
+    "warning": "完全模拟的 calculate-price 返回，不代表任何真实核价结果。本地逻辑测试专用。",
+    "purpose": "验证「实际节省 = 无券官方价 − 带券官方价」、带券核价失败的处置、超预算拒绝，以及券面金额与实际节省的区分。",
+    "moneyUnit": "所有 price / originalPrice / discount 字段单位为「分」"
+  },
+  "quotes": {
+    "T1": {
+      "none": {
+        "success": true, "code": 200,
+        "data": {
+          "productOriginalPrice": 2390, "productPrice": 2390,
+          "originalPrice": 2390, "discount": 0, "price": 2390,
+          "productList": [{ "productCode": "9900015160", "productName": "大堡口福三件套",
+                            "quantity": 1, "originalSubtotal": 2390, "subtotal": 2390 }],
+          "takeWayList": [{ "code": "eat-in", "title": "堂食", "subtitle": "店内用餐" },
+                          { "code": "take-in-store", "title": "外带", "subtitle": "店内自提" }]
+        }
+      },
+      "S3001": {
+        "success": true, "code": 200,
+        "data": {
+          "productOriginalPrice": 2390, "productPrice": 2390,
+          "originalPrice": 2390, "discount": 400, "price": 1990,
+          "productList": [{ "productCode": "9900015160", "productName": "大堡口福三件套",
+                            "quantity": 1, "originalSubtotal": 2390, "subtotal": 1990 }],
+          "takeWayList": [{ "code": "eat-in", "title": "堂食", "subtitle": "店内用餐" },
+                          { "code": "take-in-store", "title": "外带", "subtitle": "店内自提" }]
+        }
+      }
+    },
+    "T2": {
+      "none": {
+        "success": true, "code": 200,
+        "data": {
+          "originalPrice": 2340, "discount": 0, "price": 2340,
+          "productList": [{ "productCode": "9900015187", "productName": "人气经典随心配",
+                            "quantity": 1, "originalSubtotal": 1490, "subtotal": 1490 },
+                          { "productCode": "9900015165", "productName": "派",
+                            "quantity": 1, "originalSubtotal": 850, "subtotal": 850 }],
+          "takeWayList": [{ "code": "eat-in", "title": "堂食", "subtitle": "店内用餐" }]
+        }
+      },
+      "S3001": {
+        "success": false, "code": 60006,
+        "message": "商品已售罄或不可售，换一个商品或检查orderType/beType"
+      }
+    },
+    "T3": {
+      "none": {
+        "success": true, "code": 200,
+        "data": {
+          "originalPrice": 3500, "discount": 0, "price": 3500,
+          "productList": [{ "productCode": "9900015183", "productName": "精选单人餐三件套",
+                            "quantity": 1, "originalSubtotal": 3500, "subtotal": 3500 }],
+          "takeWayList": [{ "code": "eat-in", "title": "堂食", "subtitle": "店内用餐" }]
+        }
+      }
+    },
+    "T4": {
+      "none": {
+        "success": true, "code": 200,
+        "data": {
+          "originalPrice": 2390, "discount": 0, "price": 2390,
+          "productList": [{ "productCode": "9900015160", "productName": "大堡口福三件套",
+                            "quantity": 1, "originalSubtotal": 2390, "subtotal": 2390 }],
+          "takeWayList": [{ "code": "eat-in", "title": "堂食", "subtitle": "店内用餐" }]
+        }
+      },
+      "FACE5": {
+        "success": true, "code": 200,
+        "data": {
+          "originalPrice": 2390, "discount": 200, "price": 2190,
+          "productList": [{ "productCode": "9900015160", "productName": "大堡口福三件套",
+                            "quantity": 1, "originalSubtotal": 2390, "subtotal": 2190 }],
+          "takeWayList": [{ "code": "eat-in", "title": "堂食", "subtitle": "店内用餐" }],
+          "enjoyable": { "amountType": "3", "realDiscount": 5, "balance": 610 }
+        }
+      }
+    }
+  }
+}

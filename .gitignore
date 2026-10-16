@@ -1,0 +1,15 @@
+# WorkBuddy 本地工作数据（不属于交付内容）
+.workbuddy/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# macOS
+.DS_Store
+
+# 本地运行产物
+/tmp_*.json
+*.local.json

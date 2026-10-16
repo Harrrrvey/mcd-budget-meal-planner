@@ -1,0 +1,54 @@
+{
+  "_fixture": {
+    "level": "structure_sample",
+    "warning": "这不是真实抓包。字段名依据官方工具对 query-store-coupons 的返回结构说明构造。",
+    "documentedFields": [
+      "data[].title",
+      "data[].couponId",
+      "data[].couponCode",
+      "data[].tradeDateTime",
+      "data[].products[].productName",
+      "data[].products[].productCode"
+    ],
+    "purpose": "验证解析器对「同一券ID对应多个券码」的归并、编码级匹配、过期过滤，以及「无适用商品编码」不得视为全品适用。"
+  },
+  "success": true,
+  "code": 200,
+  "message": "请求成功",
+  "data": [
+    {
+      "title": "派买一送一",
+      "couponId": "S3001",
+      "couponCode": "SC-3001A",
+      "tradeDateTime": "2026-12-31 23:59:59",
+      "products": [{ "productName": "派", "productCode": "9900015165" }]
+    },
+    {
+      "title": "派买一送一",
+      "couponId": "S3001",
+      "couponCode": "SC-3001B",
+      "tradeDateTime": "2026-12-31 23:59:59",
+      "products": [{ "productName": "派", "productCode": "9900015165" }]
+    },
+    {
+      "title": "9.9元中杯冰美式",
+      "couponId": "S3002",
+      "couponCode": "SC-3002",
+      "tradeDateTime": "2026-12-31 23:59:59",
+      "products": [{ "productName": "可乐中杯", "productCode": "9900008751" }]
+    },
+    {
+      "title": "大堡口福立减5元",
+      "couponId": "S3003",
+      "couponCode": "SC-3003",
+      "tradeDateTime": "2026-09-30 23:59:59",
+      "products": [{ "productName": "大堡口福三件套", "productCode": "9900015160" }]
+    },
+    {
+      "title": "适用商品待确认的券",
+      "couponId": "S3004",
+      "couponCode": "SC-3004",
+      "tradeDateTime": "2026-12-31 23:59:59"
+    }
+  ]
+}

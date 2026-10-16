@@ -1,0 +1,15 @@
+{
+  "_fixture": {
+    "level": "real",
+    "tool": "query-store-coupons",
+    "calledAt": "2026-10-16T03:10:19+08:00",
+    "params": { "storeCode": "3230019", "orderType": 1, "beType": 1 },
+    "note": "真实返回：code=200 且 data 为空数组。用于验证「查询成功但为空」不等于「查询失败」。"
+  },
+  "success": true,
+  "code": 200,
+  "message": "请求成功",
+  "datetime": "2026-10-16 03:10:19",
+  "traceId": "f13ce90d73b9c7c8e197893afa98eec6",
+  "data": []
+}

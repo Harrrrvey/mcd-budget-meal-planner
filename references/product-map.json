@@ -1,0 +1,1699 @@
+{
+  "schemaVersion": "1.0.0",
+  "description": "麦麦预算点餐师 - 商品组成映射表。只保存商品组成、分类、置信度、来源与核验时间等结构信息。严禁写入任何价格；价格必须每次从 query-meals 实时菜单读取。",
+  "channel": {
+    "orderType": 1,
+    "orderTypeMeaning": "到店（含到店自取与得来速车道取餐）",
+    "beType": 1,
+    "beTypeMeaning": "到店自取",
+    "passBeCode": false,
+    "note": "到店自取场景不传 beCode；传 beCode 会报错。"
+  },
+  "verificationContext": {
+    "storeCode": "3230019",
+    "storeName": "麦当劳大连华南餐厅",
+    "verifiedOn": "2026-10-16",
+    "verifiedBy": "真实 MCP 调用（query-meal-detail）",
+    "scopeWarning": "本表仅覆盖第一版核心流程实际需要、且已通过 query-meal-detail 实测确认组成的商品。未列入的商品一律视为“未知组成”，不得用于满足硬性条件。",
+    "daypartNote": "⚠️ 麦当劳菜单随时段（早餐/午餐/下午茶/夜市/宵夜）整体切换。2026-10-16 10:00 时 3230019 处于早餐时段（05:14–10:15），全部常规商品调用 query-meal-detail 均返回 60001「未匹配到商品，请重新拉取全量商品列表」。因此 2026-10-16 10:00–10:01 这一批 15 个商品的组成核实改在 storeCode=3230442（麦当劳大连华南万象汇餐厅，当时处于午餐时段 09:14–14:15）完成；这 15 个条目 evidence.storeCode 均为 3230442。商品组成是品牌级属性、不随门店变化，但请勿据此把 3230442 当作默认门店。",
+    "batch4Note": "第四批（2026-10-16）新增 15 个商品，覆盖 521316 / 521952 / 521953 / 9900000890 / 9900000891 / 9900004066 / 9900005449 / 9900005453 / 9900005456 / 9900005462 / 9900005464 / 9900016073 / 9900016075 / 9900016309 / 9900016310。全部有真实 query-meal-detail 返回。",
+    "batch5Note": "第五批（2026-10-16 10:55–10:57，storeCode=3230019，午餐时段）新增 7 条：9900008747 / 9900008746 / 9900015602 / 9900016057 / 9900004064 / 9900013304 / 9900015568。它们都是因**编码轮换**而新出现在在售清单里的编码，全部有真实 query-meal-detail 返回，且是**独立核实**的结果 —— 不是旧条目的改名沿用。另为核实 9900015602 的默认主食，额外探测了子项 521147（rounds=[]，原子商品），该编码不是顶层菜单商品，故未单独建条目。",
+    "codeRotationNote": "编码轮换与失效编码的完整来源、证据强度、处理方式见顶层 `codeRotation`。7 个旧编码（9900015162 / 9900015164 / 9900015160 / 9900016054 / 9900015183 / 9900015187 / 9900015188）已标 retired 并被 build_pool 强制排除；1 个编码（521143）因缺少原时段证据，保持「当前不可验证」，**未**标 retired。",
+    "batch6Note": "第六批（2026-10-16 11:12–11:13，storeCode=3230019，午餐时段）新增 11 条，全部来自 `coverage.priorityToVerify` 里「名称疑似含汉堡但未核实」的清单：1100 巨无霸、4648 不素之霸双层牛堡、9900003586 双层深海鳕鱼堡、9900005466 巨无霸三件套、9900005413 双层深海鳕鱼堡三件套、9900005411 不素之霸双层牛堡三件套、9900000888 巨无霸四件套、9900000886 不素之霸双层牛堡四件套、9900000893 双层深海鳕鱼堡四件套、9900010110 鱼牛汉堡四件套随心选、9900016058 鱼排堡开心乐园餐。11 条全部有真实 query-meal-detail 返回，全部为**单选**结构（各轮 minQuantity = maxQuantity = 1），无一条需要多选支持。",
+    "batch7Note": "第七批（2026-10-16 12:03:00–12:03:48，storeCode=3230019，午餐时段）新增 7 条安格斯厚牛堡系列：511781 培根安格斯厚牛堡、511782 芝士安格斯厚牛堡、9900005428 培根安格斯厚牛堡三件套、9900005430 芝士安格斯厚牛堡三件套、9900000881 培根安格斯厚牛堡四件套、9900000882 芝士安格斯厚牛堡四件套、9900006957 安格斯厚牛堡四件套随心选。这 7 个编码是 2026-10-16 11:55 实时菜单相对 10:55 快照**新增**的（见 tests/TEST_RESULTS.md §14）。7 条全部有真实 query-meal-detail 返回，全部为**单选**结构（各轮 minQuantity = maxQuantity = 1）。其中 9900000881 / 9900000882 / 9900006957 的菜单现价是**随单购麦金卡条件价**（预筛按原价处理，属 P1.9 既有规则，未因此改动）。"
+  },
+  "requiresUserSelectionNote": "标记 requiresUserSelection=true 的商品，其组成需要用户在多个可选项中做出选择（multi-select）。这类商品**不得**用于满足硬性条件，代码层通过 canSatisfyBurgerConstraint=false 强制排除。",
+  "proteinTypeNote": "可选字段 `proteinType` 是**纯标注**，2026-10-16 第六批新增条目才带上它（取值 beef / fish，均取自 query-meal-detail 返回的默认主食名称，不是名称臆测）。它**不参与任何筛选或判定**（`scripts/plan.py` 从不读取该字段，有测试断言保证），也没有回填到第六批之前的条目 —— 回填需要逐条重新核实，属独立任务。用途：为将来「想要牛肉堡 / 不要鱼堡」这类蛋白偏好预留可读信息；当前 Skill 不支持该偏好，若用户提出必须如实说明。",
+  "confidenceLevels": {
+    "confirmed_detail": "已用 query-meal-detail 实测确认 rounds 结构或默认组成。可用于满足硬性条件（若同时 requiresUserSelection=true 或 retired 则除外）。",
+    "name_inferred_single": "原子单品的名称直证（未逐条调用 query-meal-detail）。仅可用于满足可选偏好（饮料/小食），不得用于满足硬性条件。",
+    "unknown": "组成未知。不得假设其满足任何硬性条件。",
+    "retired": "该编码已确认失效/已被轮换。组成信息保留仅供追溯，**绝不**参与推荐与核价（build_pool 会强制跳过）。"
+  },
+  "verifiedProducts": {
+    "1450": {
+      "nameFromMenu": "麦香鸡",
+      "nameFromDetail": "麦香鸡",
+      "kind": "single",
+      "roundsVerified": true,
+      "roundsLen": 0,
+      "defaultComposition": [],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:25:14+08:00",
+        "raw": "data.rounds = []（空数组）"
+      },
+      "notes": "rounds 为空数组 = 原子商品，商品名即组成。麦香鸡本身即为汉堡。"
+    },
+    "1406": {
+      "nameFromMenu": "板烧鸡腿堡",
+      "nameFromDetail": "板烧鸡腿堡",
+      "kind": "single",
+      "roundsVerified": true,
+      "roundsLen": 0,
+      "defaultComposition": [],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:40:38+08:00",
+        "raw": "data.rounds = []（空数组）"
+      },
+      "notes": "rounds 为空数组 = 原子商品。"
+    },
+    "1440": {
+      "nameFromMenu": "麦辣鸡腿汉堡",
+      "nameFromDetail": "麦辣鸡腿汉堡",
+      "kind": "single",
+      "roundsVerified": true,
+      "roundsLen": 0,
+      "defaultComposition": [],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:40:38+08:00",
+        "raw": "data.rounds = []（空数组）"
+      },
+      "notes": "rounds 为空数组 = 原子商品。"
+    },
+    "1120": {
+      "nameFromMenu": "双层吉士汉堡",
+      "nameFromDetail": "双层吉士汉堡",
+      "kind": "single",
+      "roundsVerified": true,
+      "roundsLen": 0,
+      "defaultComposition": [],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:40:38+08:00",
+        "raw": "data.rounds = []（空数组）"
+      },
+      "notes": "rounds 为空数组 = 原子商品。"
+    },
+    "9900015162": {
+      "retired": {
+        "retiredOn": "2026-10-16",
+        "observedAt": "2026-10-16T10:55:39+08:00",
+        "retiredProbeAt": "2026-10-16T10:48:27+08:00",
+        "retiredProbeResult": "query-meal-detail(3230019, 9900015162) -> success:false, code 60001「未匹配到商品，请重新拉取全量商品列表」（此时为常规午餐菜单，已排除时段因素）",
+        "supersededBy": "9900008747",
+        "equivalence": "A",
+        "equivalenceNote": "默认组成完全等价：roundsLen=1、轮次名「选择汉堡」、默认 1000 汉堡包，与旧编码一致。可选项集合扩大（新增 520551 培根芝士双牛堡 +¥10.5），不影响默认组成判定。",
+        "action": "已在 build_pool 中强制排除，不得再作为可售候选或核价对象。"
+      },
+      "nameFromMenu": "牛肉堡单品精选",
+      "nameFromDetail": "牛肉堡单品精选",
+      "kind": "choice_single",
+      "roundsVerified": true,
+      "roundsLen": 1,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "选择汉堡", "choiceCode": "1000", "choiceName": "汉堡包", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:24:33+08:00",
+        "raw": "rounds[0] = '选择汉堡'，默认 汉堡包(1000)，可选 吉士汉堡包(1010) diffPrice +¥1"
+      },
+      "notes": "只有一个 round，且所有 choice 都是汉堡 → 该商品任何配置下都含汉堡。"
+    },
+    "9900015164": {
+      "retired": {
+        "retiredOn": "2026-10-16",
+        "observedAt": "2026-10-16T10:55:39+08:00",
+        "retiredProbeAt": "2026-10-16T10:55:52+08:00",
+        "retiredProbeResult": "query-meal-detail(3230019, 9900015164) -> success:false, code 60001（常规午餐菜单时段）",
+        "supersededBy": "9900008746",
+        "equivalence": "A",
+        "equivalenceNote": "默认组成完全等价：roundsLen=1、轮次名「选择主食」、默认 515295 双层脆鸡堡。可选项集合扩大（新增 521147 Hold不住鸡排堡 +¥0）。",
+        "action": "已在 build_pool 中强制排除。"
+      },
+      "nameFromMenu": "鸡肉堡单品精选",
+      "nameFromDetail": "鸡肉堡单品精选",
+      "kind": "choice_single",
+      "roundsVerified": true,
+      "roundsLen": 1,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "选择主食", "choiceCode": "515295", "choiceName": "双层脆鸡堡", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:24:41+08:00",
+        "raw": "rounds[0] = '选择主食'，唯一 choice = 双层脆鸡堡(515295)"
+      },
+      "notes": "唯一选项即汉堡，无切换空间。"
+    },
+    "9900015160": {
+      "retired": {
+        "retiredOn": "2026-10-16",
+        "observedAt": "2026-10-16T10:55:39+08:00",
+        "retiredProbeAt": "2026-10-16T10:55:52+08:00",
+        "retiredProbeResult": "query-meal-detail(3230019, 9900015160) -> success:false, code 60001（常规午餐菜单时段）",
+        "supersededBy": "9900015602",
+        "equivalence": "B",
+        "equivalenceNote": "同名（大堡口福三件套），但**默认组成不等价**：第 1 轮「选择主食」默认由 515295 双层脆鸡堡 变为 521147 Hold不住鸡排堡（椒盐风味）；可选项也不同；菜单价从 ¥23.9 变为 ¥22.9。因此**不得**把两者当作同一商品替换。",
+        "action": "已在 build_pool 中强制排除。新编码 9900015602 已作为**独立商品**单独核实并单独建条目，未沿用本条旧结论。"
+      },
+      "nameFromMenu": "大堡口福三件套",
+      "nameFromDetail": "大堡口福三件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "选择主食", "choiceCode": "515295", "choiceName": "双层脆鸡堡", "isDefault": true },
+        { "roundId": 2, "roundName": "选择小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:20:01+08:00",
+        "raw": "rounds = ['选择主食','选择小食','选择套餐内饮料']，默认 双层脆鸡堡 / 中薯条 / 可乐中杯"
+      },
+      "notes": "三个 round 的默认项均为汉堡+小食+饮料，一次性覆盖三类。"
+    },
+    "9900015183": {
+      "retired": {
+        "retiredOn": "2026-10-16",
+        "observedAt": "2026-10-16T10:55:39+08:00",
+        "retiredProbeAt": null,
+        "detectionMethod": "在 2026-10-16T10:55:39 的实时菜单（query-meals）中不存在；其位置出现同名商品 9900004064，故未再重复调用 query-meal-detail 探测旧编码。",
+        "supersededBy": "9900004064",
+        "equivalence": "A",
+        "equivalenceNote": "默认组成完全等价：roundsLen=3，轮次名（主食任意选/选择套餐内小食/选择套餐内饮料）与默认项（1406 板烧鸡腿堡 / 4810 中薯条 / 3050 可乐中杯）逐项一致；菜单价同为 ¥35。可选项集合扩大（主食区新增 1100 巨无霸、520312 原味双层深海鳕鱼堡）。",
+        "action": "已在 build_pool 中强制排除。"
+      },
+      "nameFromMenu": "精选单人餐三件套",
+      "nameFromDetail": "精选单人餐三件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "主食任意选", "choiceCode": "1406", "choiceName": "板烧鸡腿堡", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:08:56+08:00",
+        "raw": "rounds 三区，默认 板烧鸡腿堡 / 中薯条 / 可乐中杯；首区可选 麦辣鸡腿汉堡"
+      },
+      "notes": "名称中不含“堡”字，但默认组成含汉堡——这是“不能靠名称判断”的典型案例。"
+    },
+    "9900011128": {
+      "nameFromMenu": "“堡”你欢乐套餐",
+      "nameFromDetail": "“堡”你欢乐套餐",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 4,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "汉堡包", "choiceCode": "1000", "choiceName": "汉堡包", "isDefault": true },
+        { "roundId": 2, "roundName": "麦乐鸡4块", "choiceCode": "515106", "choiceName": "麦乐鸡4块", "isDefault": true },
+        { "roundId": 3, "roundName": "苹果片一袋(60g)", "choiceCode": "6102", "choiceName": "苹果片一袋(60g)", "isDefault": true },
+        { "roundId": 4, "roundName": "选择饮料", "choiceCode": "3071", "choiceName": "无糖可口可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:24:47+08:00",
+        "raw": "4 个 round：汉堡包 / 麦乐鸡4块 / 苹果片一袋(60g) / 无糖可口可乐中杯"
+      },
+      "notes": "四件，含汉堡+小食+饮料。"
+    },
+    "9900016054": {
+      "retired": {
+        "retiredOn": "2026-10-16",
+        "observedAt": "2026-10-16T10:55:39+08:00",
+        "retiredProbeAt": "2026-10-16T10:47:37+08:00",
+        "retiredProbeResult": "query-meal-detail(3230019, 9900016054) -> success:false, code 60001（常规午餐菜单时段）",
+        "supersededBy": "9900016057",
+        "equivalence": "A",
+        "equivalenceNote": "默认组成完全等价：roundsLen=5，轮次名（汉堡包/迷你薯条/选择开心乐园餐小食/选择开心乐园餐饮料/海绵宝宝×航海王系列玩具）与默认项（1000/504643/6102/3755/521991）逐项一致；菜单价同为 ¥23.5。⚠️ 旧条目的 evidence.raw 未逐项记录可选项全集，故可选项集合不做等价断言。",
+        "action": "已在 build_pool 中强制排除。"
+      },
+      "nameFromMenu": "汉堡开心乐园餐",
+      "nameFromDetail": "汉堡开心乐园餐",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 5,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "汉堡包", "choiceCode": "1000", "choiceName": "汉堡包", "isDefault": true },
+        { "roundId": 2, "roundName": "迷你薯条", "choiceCode": "504643", "choiceName": "迷你薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择开心乐园餐小食", "choiceCode": "6102", "choiceName": "苹果片一袋(60g)", "isDefault": true },
+        { "roundId": 4, "roundName": "选择开心乐园餐饮料", "choiceCode": "3755", "choiceName": "纯牛奶", "isDefault": true },
+        { "roundId": 5, "roundName": "海绵宝宝×航海王系列玩具", "choiceCode": "521991", "choiceName": "海绵宝宝×航海王系列玩具", "isDefault": true, "nonFood": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:24:55+08:00",
+        "raw": "5 个 round，其中第 5 个为玩具（非食品）"
+      },
+      "notes": "含非食品项（玩具）。组合搜索仍将整份套餐视作一个商品，不做拆解。"
+    },
+    "9900015187": {
+      "retired": {
+        "retiredOn": "2026-10-16",
+        "observedAt": "2026-10-16T10:55:39+08:00",
+        "retiredProbeAt": null,
+        "detectionMethod": "在 2026-10-16T10:55:39 的实时菜单（query-meals）中不存在；其位置出现同名商品 9900013304。",
+        "supersededBy": "9900013304",
+        "equivalence": "B",
+        "equivalenceNote": "同名（人气经典随心配），但**默认组成不等价**：第 2 轮「粉区」默认由 515281 阳光柠檬红茶中杯 变为 521328 可乐麦炫酷。第 1 轮「蓝区」默认仍为 1120 双层吉士汉堡（这一项等价）。因存在不等价轮次，**不得**当作同一商品替换。",
+        "action": "已在 build_pool 中强制排除。新编码 9900013304 已作为**独立商品**单独核实并单独建条目。"
+      },
+      "nameFromMenu": "人气经典随心配",
+      "nameFromDetail": "人气经典随心配",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 2,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "蓝区", "choiceCode": "1120", "choiceName": "双层吉士汉堡", "isDefault": true },
+        { "roundId": 2, "roundName": "粉区", "choiceCode": "515281", "choiceName": "阳光柠檬红茶中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": true,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:24:23+08:00",
+        "raw": "蓝区默认 双层吉士汉堡(1120)，同区还有 马来咖喱肉骨鸡3块/麦乐鸡5块/小薯条 等非汉堡项"
+      },
+      "notes": "默认含汉堡，但蓝区可换成非汉堡项 → burgerSwitchable = true。判定按“默认组成”为准：满足含汉堡，但输出时应提示可切换。"
+    },
+    "9900015188": {
+      "retired": {
+        "retiredOn": "2026-10-16",
+        "observedAt": "2026-10-16T10:55:39+08:00",
+        "retiredProbeAt": null,
+        "detectionMethod": "在 2026-10-16T10:55:39 的实时菜单（query-meals）中不存在；其位置出现同名商品 9900015568。",
+        "supersededBy": "9900015568",
+        "equivalence": "B",
+        "equivalenceNote": "同名（精选超值随心配），但**两轮默认组成均不等价**：第 1 轮「蓝区」默认由 521881 马来咖喱风味薄皮肉骨鸡3块 变为 521156 那么大鸡排（椒盐风味）；第 2 轮「粉区」默认由 515281 阳光柠檬红茶中杯 变为 521336 怡泉+C麦炫酷。菜单价也从 ¥14.9 变为 ¥13.9。**不得**当作同一商品替换。",
+        "action": "已在 build_pool 中强制排除。新编码 9900015568 已作为**独立商品**单独核实并单独建条目。"
+      },
+      "nameFromMenu": "精选超值随心配",
+      "nameFromDetail": "精选超值随心配",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 2,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "蓝区", "choiceCode": "521881", "choiceName": "马来咖喱风味薄皮肉骨鸡3块", "isDefault": true },
+        { "roundId": 2, "roundName": "粉区", "choiceCode": "515281", "choiceName": "阳光柠檬红茶中杯", "isDefault": true }
+      ],
+      "categories": { "burger": false, "drink": true, "side": false },
+      "containsBurgerByDefault": false,
+      "burgerSwitchable": true,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:24:33+08:00",
+        "raw": "蓝区默认 马来咖喱风味薄皮肉骨鸡3块(521881)（非汉堡）"
+      },
+      "notes": "与 9900015187 同为 ¥14.9“随心配”，但默认组成不含汉堡 → 不得用于满足“必须含汉堡”。"
+    },
+    "9900016076": {
+      "nameFromMenu": "“我就喜欢”鸡薯双全盒",
+      "nameFromDetail": "“我就喜欢”鸡薯双全盒",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "5块心形薯饼(不含酱)", "choiceCode": "521962", "choiceName": "5块心形薯饼", "isDefault": true },
+        { "roundId": 2, "roundName": "韩式辣椒黄油风味酱", "choiceCode": "521965", "choiceName": "韩式辣椒黄油风味酱", "isDefault": true },
+        { "roundId": 3, "roundName": "5块麦乐鸡", "choiceCode": "521959", "choiceName": "5块麦乐鸡", "isDefault": true }
+      ],
+      "categories": { "burger": false, "drink": false, "side": true },
+      "containsBurgerByDefault": false,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:24:23+08:00",
+        "raw": "三个 round 均为固定项：心形薯饼 / 风味酱 / 麦乐鸡，无汉堡无饮料"
+      },
+      "notes": "纯小食盒。"
+    },
+    "9900011126": {
+      "nameFromMenu": "酥脆无双套餐",
+      "nameFromDetail": "酥脆无双套餐",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "选择炸鸡", "choiceCode": "505416", "choiceName": "麦麦脆汁鸡-琵琶腿", "isDefault": true },
+        { "roundId": 2, "roundName": "迷你薯条", "choiceCode": "504643", "choiceName": "迷你薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择饮料", "choiceCode": "3071", "choiceName": "无糖可口可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": false, "drink": true, "side": true },
+      "containsBurgerByDefault": false,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:24:41+08:00",
+        "raw": "炸鸡 / 迷你薯条 / 无糖可口可乐中杯，无汉堡"
+      },
+      "notes": "名称看似正餐套餐，实际不含汉堡——关键反例。"
+    },
+    "9900011123": {
+      "nameFromMenu": "“辣”么快乐套餐",
+      "nameFromDetail": "“辣”么快乐套餐",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "麦辣鸡翅-2块", "choiceCode": "1700", "choiceName": "麦辣鸡翅2块", "isDefault": true },
+        { "roundId": 2, "roundName": "麦乐鸡4块", "choiceCode": "515106", "choiceName": "麦乐鸡4块", "isDefault": true },
+        { "roundId": 3, "roundName": "选择饮料", "choiceCode": "3071", "choiceName": "无糖可口可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": false, "drink": true, "side": true },
+      "containsBurgerByDefault": false,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:24:47+08:00",
+        "raw": "麦辣鸡翅2块 / 麦乐鸡4块 / 无糖可口可乐中杯，无汉堡"
+      },
+      "notes": "名称不含“堡”，实际也不含汉堡——与“酥脆无双套餐”一样属于易误判项。"
+    },
+    "9900004835": {
+      "nameFromMenu": "麦乐鸡套餐",
+      "nameFromDetail": "麦乐鸡经典中套餐",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "麦乐鸡5块", "choiceCode": "1401", "choiceName": "麦乐鸡5块", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": false, "drink": true, "side": true },
+      "containsBurgerByDefault": false,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T02:24:54+08:00",
+        "raw": "麦乐鸡5块 / 中薯条 / 可乐中杯，无汉堡；menu 名与 detail 名不同"
+      },
+      "notes": "重要：菜单名（麦乐鸡套餐）与详情名（麦乐鸡经典中套餐）不一致 → 必须以 code 为主键。"
+    },
+    "521316": {
+      "nameFromMenu": "高达吉士双牛堡",
+      "nameFromDetail": "高达吉士双牛堡",
+      "kind": "single",
+      "roundsVerified": true,
+      "roundsLen": 0,
+      "defaultComposition": [],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:00:48+08:00",
+        "raw": "data.rounds = []（空数组）；modification.items 仅一组可选配料（酸黄瓜/洋葱粒/番茄酱/芥末酱/高达干酪片），minValues=0"
+      },
+      "notes": "rounds 为空数组 = 原子商品，商品名即组成。配料全部可选（minValues=0），不构成组成切换 → burgerSwitchable=false。"
+    },
+    "521952": {
+      "nameFromMenu": "龙焰鸡腿堡",
+      "nameFromDetail": "龙焰鸡腿堡",
+      "kind": "single",
+      "roundsVerified": true,
+      "roundsLen": 0,
+      "defaultComposition": [],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:00:56+08:00",
+        "raw": "data.rounds = []（空数组）；modification.items 一组可选配料（辣椒黄油风味酱/切块生菜），minValues=0"
+      },
+      "notes": "rounds 为空数组 = 原子商品。该编码同时是 9900016073 / 9900016309 第 1 轮的默认 choice，两处证据互相印证。"
+    },
+    "521953": {
+      "nameFromMenu": "龙焰芝士棒鸡腿堡",
+      "nameFromDetail": "龙焰芝士棒鸡腿堡",
+      "kind": "single",
+      "roundsVerified": true,
+      "roundsLen": 0,
+      "defaultComposition": [],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:00:48+08:00",
+        "raw": "data.rounds = []（空数组）；modification.items 一组可选配料（辣椒黄油风味酱/切块生菜），minValues=0"
+      },
+      "notes": "rounds 为空数组 = 原子商品。该编码同时是 9900016075 / 9900016310 第 1 轮的默认 choice。"
+    },
+    "9900000890": {
+      "nameFromMenu": "板烧鸡腿堡四件套",
+      "nameFromDetail": "板烧鸡腿堡四件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 4,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "板烧鸡腿堡", "choiceCode": "1406", "choiceName": "板烧鸡腿堡", "isDefault": true },
+        { "roundId": 2, "roundName": "小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "小食", "choiceCode": "515106", "choiceName": "麦乐鸡4块", "isDefault": true },
+        { "roundId": 4, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:00:55+08:00",
+        "raw": "4 个 round，minQuantity 均为 1；默认 板烧鸡腿堡(1406) / 中薯条(4810) / 麦乐鸡4块(515106) / 可乐中杯(3050)"
+      },
+      "notes": "第 1 轮只有 1 个 choice（板烧鸡腿堡），无切换空间 → burgerSwitchable=false。第 2、3 轮 roundName 同为「小食」，是官方命名重复，不是解析错误。"
+    },
+    "9900000891": {
+      "nameFromMenu": "麦辣鸡腿堡四件套",
+      "nameFromDetail": "麦辣鸡腿堡四件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 4,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "麦辣鸡腿汉堡", "choiceCode": "1440", "choiceName": "麦辣鸡腿汉堡", "isDefault": true },
+        { "roundId": 2, "roundName": "小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "小食", "choiceCode": "515106", "choiceName": "麦乐鸡4块", "isDefault": true },
+        { "roundId": 4, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:00:55+08:00",
+        "raw": "4 个 round，minQuantity 均为 1；默认 麦辣鸡腿汉堡(1440) / 中薯条(4810) / 麦乐鸡4块(515106) / 可乐中杯(3050)"
+      },
+      "notes": "与 9900000890 结构完全一致，仅主食由板烧换成麦辣。第 1 轮只有 1 个 choice → burgerSwitchable=false。"
+    },
+    "9900004066": {
+      "nameFromMenu": "堡堡随心拼（7件任选）",
+      "nameFromDetail": "堡堡随心拼（7件任选）",
+      "kind": "combo_multi_select",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "requiresUserSelection": true,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "主食任意选", "choiceCode": "1440", "choiceName": "麦辣鸡腿汉堡", "isDefault": true, "selectedQuantity": 2, "minQuantity": 2 },
+        { "roundId": 2, "roundName": "选择随心配小食", "choiceCode": "1700", "choiceName": "麦辣鸡翅2块", "isDefault": true, "selectedQuantity": 3, "minQuantity": 3 },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true, "selectedQuantity": 2, "minQuantity": 2 }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": true,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:01:02+08:00",
+        "raw": "3 个 round，全部 multi-select：主食任意选 min=max=2（默认 2 份麦辣鸡腿汉堡）、选择随心配小食 min=max=3（默认 3 份麦辣鸡翅2块）、选择套餐内饮料 min=max=2（默认 2 份可乐中杯），合计 7 件"
+      },
+      "notes": "⚠️ 该商品需要用户多选：第 1 轮除麦辣鸡腿汉堡外还有「酥酥多笋卷(521816)」等非汉堡选项，第 2 轮全部为非汉堡小食。默认组成确实含汉堡，但用户完全可以选出不含汉堡的组合。**当前 Skill 无法处理多选**，故标记 requiresUserSelection=true，代码层强制 canSatisfyBurgerConstraint=false —— 不得用它满足「必须含汉堡」。"
+    },
+    "9900005449": {
+      "nameFromMenu": "吉士汉堡包套餐",
+      "nameFromDetail": "吉士汉堡包中套餐",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "吉士汉堡包", "choiceCode": "1010", "choiceName": "吉士汉堡包", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:01:02+08:00",
+        "raw": "3 个 round，minQuantity 均为 1；默认 吉士汉堡包(1010) / 中薯条(4810) / 可乐中杯(3050)"
+      },
+      "notes": "菜单名「吉士汉堡包套餐」与详情名「吉士汉堡包中套餐」不一致（又一例菜单名≠详情名），主键必须用 code。第 1 轮只有 1 个 choice。"
+    },
+    "9900005453": {
+      "nameFromMenu": "麦香鸡套餐",
+      "nameFromDetail": "麦香鸡中套餐",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "麦香鸡", "choiceCode": "1450", "choiceName": "麦香鸡", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:01:02+08:00",
+        "raw": "3 个 round，minQuantity 均为 1；默认 麦香鸡(1450) / 中薯条(4810) / 可乐中杯(3050)"
+      },
+      "notes": "菜单名「麦香鸡套餐」与详情名「麦香鸡中套餐」不一致。主食编码 1450 与映射表中已确认的原子汉堡「麦香鸡」同一 code，互相印证。"
+    },
+    "9900005456": {
+      "nameFromMenu": "麦辣鸡腿汉堡三件套",
+      "nameFromDetail": "麦辣鸡腿汉堡三件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "麦辣鸡腿汉堡", "choiceCode": "1440", "choiceName": "麦辣鸡腿汉堡", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:01:17+08:00",
+        "raw": "3 个 round，minQuantity 均为 1；默认 麦辣鸡腿汉堡(1440) / 中薯条(4810) / 可乐中杯(3050)；第 2 轮小食选项含 5块心形薯饼+酱(+1)、马来咖喱肉骨鸡3块(+2.5)、大薯条(+2)、小杯玉米杯(-1)、大杯玉米杯(+1.5)、脆脆薯条(+2)"
+      },
+      "notes": "第 2 轮小食换项中**不含鸡翅**（此前 2026-10-16 03:00 实测已确认），因此不能用该套餐凑出「鸡翅」。第 1 轮只有 1 个 choice。"
+    },
+    "9900005462": {
+      "nameFromMenu": "板烧鸡腿堡三件套",
+      "nameFromDetail": "板烧鸡腿堡三件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "板烧鸡腿堡", "choiceCode": "1406", "choiceName": "板烧鸡腿堡", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:01:17+08:00",
+        "raw": "3 个 round，minQuantity 均为 1；默认 板烧鸡腿堡(1406) / 中薯条(4810) / 可乐中杯(3050)"
+      },
+      "notes": "第 1 轮只有 1 个 choice → burgerSwitchable=false。"
+    },
+    "9900005464": {
+      "nameFromMenu": "双层吉士汉堡套餐",
+      "nameFromDetail": "双层吉士汉堡中套餐",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "双层吉士汉堡", "choiceCode": "1120", "choiceName": "双层吉士汉堡", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:01:18+08:00",
+        "raw": "3 个 round，minQuantity 均为 1；默认 双层吉士汉堡(1120) / 中薯条(4810) / 可乐中杯(3050)"
+      },
+      "notes": "菜单名「双层吉士汉堡套餐」与详情名「双层吉士汉堡中套餐」不一致。主食 1120 与已确认原子汉堡同一 code。"
+    },
+    "9900016073": {
+      "nameFromMenu": "龙焰鸡腿堡三件套",
+      "nameFromDetail": "龙焰鸡腿堡三件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "龙焰鸡腿堡", "choiceCode": "521952", "choiceName": "龙焰鸡腿堡", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:00:29+08:00",
+        "raw": "3 个 round，minQuantity 均为 1；默认 龙焰鸡腿堡(521952) / 中薯条(4810) / 可乐中杯(3050)"
+      },
+      "notes": "该商品是 2026-10-16 上午活动页重点推荐品（campaign-calendar 显示「龙焰鸡腿堡三件套 26.9 元起」）。第 1 轮只有 1 个 choice。"
+    },
+    "9900016075": {
+      "nameFromMenu": "龙焰芝士棒鸡腿堡三件套",
+      "nameFromDetail": "龙焰芝士棒鸡腿堡三件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "龙焰芝士棒鸡腿堡", "choiceCode": "521953", "choiceName": "龙焰芝士棒鸡腿堡", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:01:23+08:00",
+        "raw": "3 个 round，minQuantity 均为 1；默认 龙焰芝士棒鸡腿堡(521953) / 中薯条(4810) / 可乐中杯(3050)"
+      },
+      "notes": "与 9900016073 结构一致，仅主食换成龙焰芝士棒鸡腿堡。第 1 轮只有 1 个 choice。"
+    },
+    "9900016309": {
+      "nameFromMenu": "龙焰鸡腿堡四件套",
+      "nameFromDetail": "龙焰鸡腿堡四件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 4,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "龙焰鸡腿堡", "choiceCode": "521952", "choiceName": "龙焰鸡腿堡", "isDefault": true },
+        { "roundId": 2, "roundName": "小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "小食", "choiceCode": "515106", "choiceName": "麦乐鸡4块", "isDefault": true },
+        { "roundId": 4, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:01:24+08:00",
+        "raw": "4 个 round，minQuantity 均为 1；默认 龙焰鸡腿堡(521952) / 中薯条(4810) / 麦乐鸡4块(515106) / 可乐中杯(3050)"
+      },
+      "notes": "第 2、3 轮 roundName 同为「小食」（官方命名重复）。第 1 轮只有 1 个 choice。"
+    },
+    "9900016310": {
+      "nameFromMenu": "龙焰芝士棒鸡腿堡四件套",
+      "nameFromDetail": "龙焰芝士棒鸡腿堡四件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 4,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "龙焰芝士棒鸡腿堡", "choiceCode": "521953", "choiceName": "龙焰芝士棒鸡腿堡", "isDefault": true },
+        { "roundId": 2, "roundName": "小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "小食", "choiceCode": "515106", "choiceName": "麦乐鸡4块", "isDefault": true },
+        { "roundId": 4, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230442",
+        "orderType": 1,
+        "beType": 1,
+        "at": "2026-10-16T10:01:23+08:00",
+        "raw": "4 个 round，minQuantity 均为 1；默认 龙焰芝士棒鸡腿堡(521953) / 中薯条(4810) / 麦乐鸡4块(515106) / 可乐中杯(3050)"
+      },
+      "notes": "与 9900016309 结构一致，仅主食换成龙焰芝士棒鸡腿堡。第 1 轮只有 1 个 choice。"
+    },
+    "9900008747": {
+      "rotationFrom": "9900015162",
+      "equivalenceToPredecessor": "A",
+      "nameFromMenu": "牛肉堡单品精选",
+      "nameFromDetail": "牛肉堡单品精选",
+      "kind": "choice_single",
+      "roundsVerified": true,
+      "roundsLen": 1,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "选择汉堡", "choiceCode": "1000", "choiceName": "汉堡包", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T10:55:52+08:00",
+        "raw": "roundsLen=1，轮次「选择汉堡」，默认 汉堡包(1000, isDefault=1)；可选 1010 吉士汉堡包(+¥1)、520551 培根芝士双牛堡(+¥10.5)"
+      },
+      "notes": "只有一个 round，且所有 choice 都是汉堡 → 任何配置下都含汉堡。可选项比旧编码 9900015162 多一项，默认项不变。"
+    },
+    "9900008746": {
+      "rotationFrom": "9900015164",
+      "equivalenceToPredecessor": "A",
+      "nameFromMenu": "鸡肉堡单品精选",
+      "nameFromDetail": "鸡肉堡单品精选",
+      "kind": "choice_single",
+      "roundsVerified": true,
+      "roundsLen": 1,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "选择主食", "choiceCode": "515295", "choiceName": "双层脆鸡堡", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T10:55:52+08:00",
+        "raw": "roundsLen=1，轮次「选择主食」，默认 双层脆鸡堡(515295, isDefault=1)；可选 521147 Hold不住鸡排堡（椒盐风味）(+¥0)"
+      },
+      "notes": "唯一轮次的全部选项均为汉堡 → 任何配置下都含汉堡。"
+    },
+    "9900015602": {
+      "rotationFrom": "9900015160",
+      "equivalenceToPredecessor": "B",
+      "equivalenceWarning": "⚠️ 与旧编码 9900015160 同名但**默认组成不等价**（第 1 轮默认主食由 515295 双层脆鸡堡 变为 521147 Hold不住鸡排堡）。本条是**独立核实**的新条目，不是旧结论的沿用。",
+      "nameFromMenu": "大堡口福三件套",
+      "nameFromDetail": "大堡口福三件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "选择主食", "choiceCode": "521147", "choiceName": "Hold不住鸡排堡（椒盐风味）", "isDefault": true },
+        { "roundId": 2, "roundName": "选择小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T10:55:52+08:00",
+        "raw": "roundsLen=3，轮次「选择主食/选择小食/选择套餐内饮料」，默认 521147 Hold不住鸡排堡（椒盐风味）(isDefault=1) / 4810 中薯条 / 3050 可乐中杯；第 1 轮可选 515295 双层脆鸡堡(+¥1)、520551 培根芝士双牛堡(+¥1)",
+        "supportingProbe": {
+          "code": "521147",
+          "tool": "query-meal-detail",
+          "at": "2026-10-16T10:57:05+08:00",
+          "result": "data.rounds = []（空数组）→ 原子商品；modification 仅一组可选配料（生菜/麦香鸡酱，minValues=0）",
+          "why": "默认主食 521147 是否为「汉堡」不能仅凭名称判断，故单独探测其结构。rounds=[] 证明它是原子商品（商品名即组成），且第 1 轮三个可选主食全部为汉堡 → 无论怎么选第 1 轮都是汉堡。"
+        }
+      },
+      "notes": "第 1 轮「选择主食」的全部 3 个选项（521147 鸡排堡 / 515295 双层脆鸡堡 / 520551 培根芝士双牛堡）经查均为汉堡，无切换空间 → burgerSwitchable=false。菜单价 ¥22.9。"
+    },
+    "9900016057": {
+      "rotationFrom": "9900016054",
+      "equivalenceToPredecessor": "A",
+      "nameFromMenu": "汉堡开心乐园餐",
+      "nameFromDetail": "汉堡开心乐园餐",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 5,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "汉堡包", "choiceCode": "1000", "choiceName": "汉堡包", "isDefault": true },
+        { "roundId": 2, "roundName": "迷你薯条", "choiceCode": "504643", "choiceName": "迷你薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择开心乐园餐小食", "choiceCode": "6102", "choiceName": "苹果片一袋(60g)", "isDefault": true },
+        { "roundId": 4, "roundName": "选择开心乐园餐饮料", "choiceCode": "3755", "choiceName": "纯牛奶", "isDefault": true },
+        { "roundId": 5, "roundName": "海绵宝宝×航海王系列玩具", "choiceCode": "521991", "choiceName": "海绵宝宝×航海王系列玩具", "isDefault": true, "nonFood": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T10:55:52+08:00",
+        "raw": "5 个 round，第 5 个为玩具（非食品）。默认 1000 汉堡包 / 504643 迷你薯条 / 6102 苹果片一袋(60g) / 3755 纯牛奶 / 521991 玩具；第 3 轮可选 4437 小杯玉米杯，第 4 轮可选 6362 100%苹果汁"
+      },
+      "notes": "含非食品项（玩具）。组合搜索仍将整份套餐视作一个商品，不做拆解。默认组成与旧编码 9900016054 逐项一致。"
+    },
+    "9900004064": {
+      "rotationFrom": "9900015183",
+      "equivalenceToPredecessor": "A",
+      "nameFromMenu": "精选单人餐三件套",
+      "nameFromDetail": "精选单人餐三件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "主食任意选", "choiceCode": "1406", "choiceName": "板烧鸡腿堡", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T10:57:05+08:00",
+        "raw": "roundsLen=3，轮次「主食任意选/选择套餐内小食/选择套餐内饮料」，默认 1406 板烧鸡腿堡 / 4810 中薯条 / 3050 可乐中杯；第 1 轮可选 1100 巨无霸(+¥2.5)、1440 麦辣鸡腿汉堡(-¥1)、520312 原味双层深海鳕鱼堡(+¥1)（全部为汉堡）"
+      },
+      "notes": "名称中不含「堡」字，但默认组成含汉堡——「不能靠名称判断」的又一案例。第 1 轮全部选项均为汉堡 → burgerSwitchable=false。"
+    },
+    "9900013304": {
+      "rotationFrom": "9900015187",
+      "equivalenceToPredecessor": "B",
+      "equivalenceWarning": "⚠️ 与旧编码 9900015187 同名但**默认组成不等价**（第 2 轮「粉区」默认由 515281 阳光柠檬红茶中杯 变为 521328 可乐麦炫酷）。本条为独立核实的新条目。",
+      "nameFromMenu": "人气经典随心配",
+      "nameFromDetail": "人气经典随心配",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 2,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "蓝区", "choiceCode": "1120", "choiceName": "双层吉士汉堡", "isDefault": true },
+        { "roundId": 2, "roundName": "粉区", "choiceCode": "521328", "choiceName": "可乐麦炫酷", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": true,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T10:57:05+08:00",
+        "raw": "roundsLen=2。蓝区默认 1120 双层吉士汉堡(isDefault=1)，同区还有 521881 马来咖喱风味薄皮肉骨鸡3块 / 521156 那么大鸡排 / 1401 麦乐鸡5块 / 1450 麦香鸡 / 4800 小薯条 等非汉堡项；粉区默认 521328 可乐麦炫酷"
+      },
+      "notes": "默认含汉堡（蓝区），但蓝区可换成非汉堡项 → burgerSwitchable = true。判定按「默认组成」为准：满足含汉堡，但输出时应提示可切换。"
+    },
+    "9900015568": {
+      "rotationFrom": "9900015188",
+      "equivalenceToPredecessor": "B",
+      "equivalenceWarning": "⚠️ 与旧编码 9900015188 同名但**两轮默认组成均不等价**（蓝区默认 521881 → 521156；粉区默认 515281 → 521336），且菜单价由 ¥14.9 变为 ¥13.9。本条为独立核实的新条目。",
+      "nameFromMenu": "精选超值随心配",
+      "nameFromDetail": "精选超值随心配",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 2,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "蓝区", "choiceCode": "521156", "choiceName": "那么大鸡排（椒盐风味）", "isDefault": true },
+        { "roundId": 2, "roundName": "粉区", "choiceCode": "521336", "choiceName": "怡泉+C麦炫酷", "isDefault": true }
+      ],
+      "categories": { "burger": false, "drink": true, "side": false },
+      "containsBurgerByDefault": false,
+      "burgerSwitchable": true,
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T10:57:05+08:00",
+        "raw": "roundsLen=2。蓝区默认 521156 那么大鸡排（椒盐风味）(isDefault=1)（非汉堡）；同区可选 521316 高达吉士双牛堡 / 1120 双层吉士汉堡 / 1600 麦香鱼 / 1450 麦香鸡 等。粉区默认 521336 怡泉+C麦炫酷"
+      },
+      "notes": "与 9900013304 同为「随心配」，但**默认组成不含汉堡** → 不得用于满足「必须含汉堡」。注意蓝区默认为非汉堡、但可切换为汉堡，因此 burgerSwitchable=true 只表示「存在切换可能」，不改变默认不含汉堡的判定。"
+    },
+    "1100": {
+      "nameFromMenu": "巨无霸",
+      "nameFromDetail": "巨无霸",
+      "kind": "single",
+      "roundsVerified": true,
+      "roundsLen": 0,
+      "defaultComposition": [],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "beef",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T11:12:21+08:00",
+        "raw": "data.rounds = []（空数组）；modification.items 仅一组可选配料（巨无霸酱/吉士/生菜/酸黄瓜/洋葱粒），minValues=0"
+      },
+      "notes": "rounds 为空数组 = 原子商品，商品名即组成。配料全部可选（minValues=0），不构成组成切换 → burgerSwitchable=false。牛肉类。该编码同时是 9900005466 / 9900000888 / 9900010110 第 1 轮的默认主食，多份证据互相印证。"
+    },
+    "4648": {
+      "nameFromMenu": "不素之霸双层牛堡",
+      "nameFromDetail": "不素之霸双层牛堡",
+      "kind": "single",
+      "roundsVerified": true,
+      "roundsLen": 0,
+      "defaultComposition": [],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "beef",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T11:12:22+08:00",
+        "raw": "data.rounds = []（空数组）；modification.items 仅一组可选配料（芥末沙拉酱），minValues=0"
+      },
+      "notes": "rounds 为空数组 = 原子商品。牛肉类。该编码同时是 9900005411 / 9900000886 / 9900010110 第 1 轮的默认或可选项。"
+    },
+    "9900003586": {
+      "nameFromMenu": "双层深海鳕鱼堡",
+      "nameFromDetail": "双层深海鳕鱼堡",
+      "kind": "choice_single",
+      "roundsVerified": true,
+      "roundsLen": 1,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "选择双层深海鳕鱼堡", "choiceCode": "520312", "choiceName": "原味双层深海鳕鱼堡", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "fish",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T11:12:21+08:00",
+        "raw": "roundsLen=1，轮次「选择双层深海鳕鱼堡」，默认 520312 原味双层深海鳕鱼堡(isDefault=1)；可选 8317 风味双层深海鳕鱼堡(+¥0)"
+      },
+      "notes": "唯一轮次的**全部 2 个选项都是堡** → 任何配置下都含堡，burgerSwitchable=false。⚠️ 蛋白类型为**鱼**（菜单分类「巨无霸/牛鱼肉堡」把牛/鱼/肉同列为堡）。本条目不计入 5 个「已确认不含汉堡」的防误判集合。"
+    },
+    "9900005466": {
+      "nameFromMenu": "巨无霸三件套",
+      "nameFromDetail": "巨无霸三件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "新升级巨无霸", "choiceCode": "1100", "choiceName": "巨无霸", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "beef",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T11:12:40+08:00",
+        "raw": "roundsLen=3，三区 minQuantity=maxQuantity=1（全单选）；默认 1100 巨无霸 / 4810 中薯条 / 3050 可乐中杯。第 1 轮只有 1 个 choice；第 2 轮 7 个、第 3 轮 21 个可选项"
+      },
+      "notes": "第 1 轮「新升级巨无霸」只有唯一选项 1100 → 无切换空间，burgerSwitchable=false。三区全部单选，现有逻辑可正确处理。"
+    },
+    "9900005413": {
+      "nameFromMenu": "双层深海鳕鱼堡三件套",
+      "nameFromDetail": "双层深海鳕鱼堡三件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "选择双层深海鳕鱼堡", "choiceCode": "520312", "choiceName": "原味双层深海鳕鱼堡", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "fish",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T11:12:40+08:00",
+        "raw": "roundsLen=3，三区 minQuantity=maxQuantity=1；默认 520312 原味双层深海鳕鱼堡(isDefault=1) / 4810 中薯条 / 3050 可乐中杯；第 1 轮可选 8317 风味双层深海鳕鱼堡（同为堡）"
+      },
+      "notes": "第 1 轮全部选项都是堡 → burgerSwitchable=false。⚠️ 蛋白类型为**鱼**。"
+    },
+    "9900005411": {
+      "nameFromMenu": "不素之霸双层牛堡三件套",
+      "nameFromDetail": "不素之霸双层牛堡三件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "不素之霸双层牛堡", "choiceCode": "4648", "choiceName": "不素之霸双层牛堡", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "beef",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T11:12:40+08:00",
+        "raw": "roundsLen=3，三区 minQuantity=maxQuantity=1；默认 4648 不素之霸双层牛堡 / 4810 中薯条 / 3050 可乐中杯。第 1 轮只有 1 个 choice"
+      },
+      "notes": "第 1 轮唯一选项 4648 → burgerSwitchable=false。牛肉类。"
+    },
+    "9900000888": {
+      "nameFromMenu": "巨无霸四件套",
+      "nameFromDetail": "巨无霸四件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 4,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "巨无霸", "choiceCode": "1100", "choiceName": "巨无霸", "isDefault": true },
+        { "roundId": 2, "roundName": "小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "小食", "choiceCode": "515106", "choiceName": "麦乐鸡4块", "isDefault": true },
+        { "roundId": 4, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "beef",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T11:12:59+08:00",
+        "raw": "roundsLen=4，四区 minQuantity=maxQuantity=1；默认 1100 巨无霸 / 4810 中薯条 / 515106 麦乐鸡4块 / 3050 可乐中杯。第 1 轮只有 1 个 choice"
+      },
+      "notes": "第 2、3 轮 roundName 同为「小食」（官方命名重复，与 9900000890 同款现象，不是解析错误）。第 1 轮唯一选项 → burgerSwitchable=false。⚠️ 菜单现价是「随单购麦金卡优惠」条件价（`discountType`），裸核价远高于菜单现价 —— 详见 MCP_INTEGRATION.md §7.8，本地预筛修复属 P2，本轮未做。"
+    },
+    "9900000886": {
+      "nameFromMenu": "不素之霸双层牛堡四件套",
+      "nameFromDetail": "不素之霸双层牛堡四件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 4,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "不素之霸双层牛堡", "choiceCode": "4648", "choiceName": "不素之霸双层牛堡", "isDefault": true },
+        { "roundId": 2, "roundName": "小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "小食", "choiceCode": "515106", "choiceName": "麦乐鸡4块", "isDefault": true },
+        { "roundId": 4, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "beef",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T11:13:00+08:00",
+        "raw": "roundsLen=4，四区 minQuantity=maxQuantity=1；默认 4648 不素之霸双层牛堡 / 4810 中薯条 / 515106 麦乐鸡4块 / 3050 可乐中杯。第 1 轮只有 1 个 choice"
+      },
+      "notes": "与 9900000888 结构完全一致，仅第 1 轮主食由巨无霸换成不素之霸双层牛堡。第 2、3 轮 roundName 重复为「小食」。⚠️ 同 9900000888，菜单现价是随单购条件价。"
+    },
+    "9900000893": {
+      "nameFromMenu": "双层深海鳕鱼堡四件套",
+      "nameFromDetail": "双层深海鳕鱼堡四件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 4,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "选择双层深海鳕鱼堡", "choiceCode": "520312", "choiceName": "原味双层深海鳕鱼堡", "isDefault": true },
+        { "roundId": 2, "roundName": "小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "小食", "choiceCode": "515106", "choiceName": "麦乐鸡4块", "isDefault": true },
+        { "roundId": 4, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "fish",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T11:13:00+08:00",
+        "raw": "roundsLen=4，四区 minQuantity=maxQuantity=1；默认 520312 原味双层深海鳕鱼堡(isDefault=1) / 4810 中薯条 / 515106 麦乐鸡4块 / 3050 可乐中杯；第 1 轮可选 8317 风味双层深海鳕鱼堡（同为堡）"
+      },
+      "notes": "第 1 轮全部选项都是堡 → burgerSwitchable=false。⚠️ 蛋白类型为**鱼**，且菜单现价是随单购条件价。"
+    },
+    "9900010110": {
+      "nameFromMenu": "鱼牛汉堡四件套随心选",
+      "nameFromDetail": "鱼牛汉堡四件套随心选",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 4,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "选择汉堡", "choiceCode": "1100", "choiceName": "巨无霸", "isDefault": true },
+        { "roundId": 2, "roundName": "小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "小食", "choiceCode": "515106", "choiceName": "麦乐鸡4块", "isDefault": true },
+        { "roundId": 4, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "beef",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T11:12:40+08:00",
+        "raw": "roundsLen=4，四区 minQuantity=maxQuantity=1；默认 1100 巨无霸 / 4810 中薯条 / 515106 麦乐鸡4块 / 3050 可乐中杯。第 1 轮「选择汉堡」4 个选项全部是汉堡：1100 巨无霸、4648 不素之霸双层牛堡、8317 风味双层深海鳕鱼堡、520312 原味双层深海鳕鱼堡"
+      },
+      "notes": "名称含「随心选」但**第 1 轮 4 个选项全部是堡** → 无论怎么选都含堡，burgerSwitchable=false，不需要多选支持（四区都是单选）。默认主食是牛肉类；选 8317/520312 则变成鱼类。⚠️ 菜单现价是随单购条件价。"
+    },
+    "9900016058": {
+      "nameFromMenu": "鱼排堡开心乐园餐",
+      "nameFromDetail": "鱼排堡开心乐园餐",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 5,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "鱼排堡", "choiceCode": "504642", "choiceName": "鱼排堡", "isDefault": true },
+        { "roundId": 2, "roundName": "迷你薯条", "choiceCode": "504643", "choiceName": "迷你薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择开心乐园餐小食", "choiceCode": "6102", "choiceName": "苹果片一袋(60g)", "isDefault": true },
+        { "roundId": 4, "roundName": "选择开心乐园餐饮料", "choiceCode": "3755", "choiceName": "纯牛奶", "isDefault": true },
+        { "roundId": 5, "roundName": "海绵宝宝×航海王系列玩具", "choiceCode": "521991", "choiceName": "海绵宝宝×航海王系列玩具", "isDefault": true, "nonFood": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "fish",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T11:12:21+08:00",
+        "raw": "5 个 round，五区 minQuantity=maxQuantity=1；默认 504642 鱼排堡 / 504643 迷你薯条 / 6102 苹果片一袋(60g) / 3755 纯牛奶 / 521991 玩具。第 1 轮只有 1 个 choice；第 3 轮可选 4437 小杯玉米杯，第 4 轮可选 6362 100%苹果汁"
+      },
+      "notes": "与 9900016057 汉堡开心乐园餐结构完全一致，仅第 1 轮由 1000 汉堡包换成 504642 鱼排堡。含非食品项（玩具）。全单选。⚠️ 蛋白类型为**鱼**；第 1 轮只有唯一选项 → burgerSwitchable=false。"
+    },
+    "511781": {
+      "nameFromMenu": "培根安格斯厚牛堡",
+      "nameFromDetail": "培根安格斯厚牛堡",
+      "kind": "single",
+      "roundsVerified": true,
+      "roundsLen": 0,
+      "defaultComposition": [],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "beef",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T12:03:00+08:00",
+        "raw": "data.rounds = []（空数组）；supportModify=true；modification.items 只有一组可选配料：吉士 / 烤牛肉风味酱 / 切块生菜 / 培根 / 黄油（minValues=0, maxValues=5）"
+      },
+      "notes": "rounds 为空数组 = 原子商品，商品名即组成。配料全部可选（minValues=0）→ burgerSwitchable=false。**判定不只靠名称**：modification 的配料（吉士 / 培根 / 烤牛肉风味酱 / 切块生菜 / 黄油）是汉堡类配料的独立佐证。"
+    },
+    "511782": {
+      "nameFromMenu": "芝士安格斯厚牛堡",
+      "nameFromDetail": "芝士安格斯厚牛堡",
+      "kind": "single",
+      "roundsVerified": true,
+      "roundsLen": 0,
+      "defaultComposition": [],
+      "categories": { "burger": true, "drink": false, "side": false },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "beef",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T12:03:00+08:00",
+        "raw": "data.rounds = []（空数组）；supportModify=true；modification.items 只有一组可选配料：醇香芝士风味酱 / 高达干酪片 / 番茄片 / 黄油（minValues=0, maxValues=4）"
+      },
+      "notes": "rounds 为空数组 = 原子商品。配料全部可选（minValues=0）→ burgerSwitchable=false。与 511781 同为安格斯系列，仅配料不同（芝士款 vs 培根款）。"
+    },
+    "9900005428": {
+      "nameFromMenu": "培根安格斯厚牛堡三件套",
+      "nameFromDetail": "培根安格斯厚牛堡三件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "培根安格斯厚牛堡", "choiceCode": "511781", "choiceName": "培根安格斯厚牛堡", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "beef",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T12:03:00+08:00",
+        "raw": "3 个 round，三区 minQuantity=maxQuantity=1；默认 511781 培根安格斯厚牛堡 / 4810 中薯条 / 3050 可乐中杯。第 1 轮只有 1 个 choice；第 2 轮另可选 4820 大薯条 / 514782 脆脆薯条 / 521881 等，第 3 轮另可选 3755 纯牛奶 / 507411 / 2430 等"
+      },
+      "notes": "第 1 轮只有 1 个 choice（只能是 511781）→ 任何配置都含堡，burgerSwitchable=false。全单选。菜单无 discountType（菜单现价即销售价）。"
+    },
+    "9900005430": {
+      "nameFromMenu": "芝士安格斯厚牛堡三件套",
+      "nameFromDetail": "芝士安格斯厚牛堡三件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 3,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "芝士安格斯厚牛堡", "choiceCode": "511782", "choiceName": "芝士安格斯厚牛堡", "isDefault": true },
+        { "roundId": 2, "roundName": "选择套餐内小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "beef",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T12:03:13+08:00",
+        "raw": "3 个 round，三区 minQuantity=maxQuantity=1；默认 511782 芝士安格斯厚牛堡 / 4810 中薯条 / 3050 可乐中杯。第 1 轮只有 1 个 choice"
+      },
+      "notes": "与 9900005428 结构一致，仅主食换成芝士安格斯厚牛堡。第 1 轮只有 1 个 choice → 任何配置都含堡。全单选。菜单无 discountType。"
+    },
+    "9900000881": {
+      "nameFromMenu": "培根安格斯厚牛堡四件套",
+      "nameFromDetail": "培根安格斯厚牛堡四件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 4,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "培根安格斯厚牛堡", "choiceCode": "511781", "choiceName": "培根安格斯厚牛堡", "isDefault": true },
+        { "roundId": 2, "roundName": "小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "小食", "choiceCode": "515106", "choiceName": "麦乐鸡4块", "isDefault": true },
+        { "roundId": 4, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "beef",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T12:03:23+08:00",
+        "raw": "4 个 round，四区 minQuantity=maxQuantity=1；默认 511781 培根安格斯厚牛堡 / 4810 中薯条 / 515106 麦乐鸡4块 / 3050 可乐中杯。第 1 轮只有 1 个 choice；第 2、3 轮 roundName 同为「小食」"
+      },
+      "notes": "第 2、3 轮 roundName 同为「小食」（官方命名重复）。第 1 轮只有 1 个 choice → 任何配置都含堡。全单选。⚠️ 菜单现价是**随单购麦金卡条件价**（预筛已按原价处理）。"
+    },
+    "9900000882": {
+      "nameFromMenu": "芝士安格斯厚牛堡四件套",
+      "nameFromDetail": "芝士安格斯厚牛堡四件套",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 4,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "芝士安格斯厚牛堡", "choiceCode": "511782", "choiceName": "芝士安格斯厚牛堡", "isDefault": true },
+        { "roundId": 2, "roundName": "小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "小食", "choiceCode": "515106", "choiceName": "麦乐鸡4块", "isDefault": true },
+        { "roundId": 4, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "beef",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T12:03:33+08:00",
+        "raw": "4 个 round，四区 minQuantity=maxQuantity=1；默认 511782 芝士安格斯厚牛堡 / 4810 中薯条 / 515106 麦乐鸡4块 / 3050 可乐中杯。第 1 轮只有 1 个 choice"
+      },
+      "notes": "与 9900000881 结构一致，仅主食换成芝士安格斯厚牛堡。第 2、3 轮 roundName 同为「小食」。全单选。⚠️ 菜单现价是**随单购麦金卡条件价**。"
+    },
+    "9900006957": {
+      "nameFromMenu": "安格斯厚牛堡四件套随心选",
+      "nameFromDetail": "安格斯厚牛堡四件套随心选",
+      "kind": "combo",
+      "roundsVerified": true,
+      "roundsLen": 4,
+      "defaultComposition": [
+        { "roundId": 1, "roundName": "选择安格斯厚牛堡", "choiceCode": "511782", "choiceName": "芝士安格斯厚牛堡", "isDefault": true },
+        { "roundId": 2, "roundName": "小食", "choiceCode": "4810", "choiceName": "中薯条", "isDefault": true },
+        { "roundId": 3, "roundName": "小食", "choiceCode": "515106", "choiceName": "麦乐鸡4块", "isDefault": true },
+        { "roundId": 4, "roundName": "选择套餐内饮料", "choiceCode": "3050", "choiceName": "可乐中杯", "isDefault": true }
+      ],
+      "categories": { "burger": true, "drink": true, "side": true },
+      "containsBurgerByDefault": true,
+      "burgerSwitchable": false,
+      "proteinType": "beef",
+      "confidence": "confirmed_detail",
+      "evidence": {
+        "tool": "query-meal-detail",
+        "storeCode": "3230019",
+        "orderType": 1,
+        "beType": 1,
+        "daypart": "午餐",
+        "at": "2026-10-16T12:03:48+08:00",
+        "raw": "4 个 round，四区 minQuantity=maxQuantity=1；第 1 轮「选择安格斯厚牛堡」2 个选项：511782 芝士安格斯厚牛堡（isDefault=1）、511781 培根安格斯厚牛堡 —— **两个都是安格斯厚牛堡**。默认 511782 / 4810 中薯条 / 515106 麦乐鸡4块 / 3050 可乐中杯"
+      },
+      "notes": "名称含「随心选」，但第 1 轮**两个选项全部是安格斯厚牛堡**（芝士款 / 培根款）→ 无论怎么选都含堡，burgerSwitchable=false。四区均为单选（minQuantity=maxQuantity=1）→ **不需要多选支持**，与 9900004066 堡堡随心拼（三轮 multi-select）性质不同。⚠️ 菜单现价是**随单购麦金卡条件价**。"
+    }
+  },
+  "codeRotation": {
+    "usage": "商品编码（SKU）不是永久的：菜单换季/换活动时，同一商品可能换编码。本表记录 2026-10-16 实测确认或已排除的轮换关系，供维护者追溯。**已确认失效的旧编码一律由 scripts/plan.py 的 build_pool 强制排除，不得再作为可售候选或核价对象。** 本表**不记录任何价格**（价格只能来自运行时 query-meals 与 calculate-price）。",
+    "equivalenceLevels": {
+      "A": "默认组成逐项等价。仍然**不自动替换**——新编码一律独立核实、独立建条目；本标记只说明两者默认组成一致。",
+      "B": "同名但默认组成/规格**不等价**。绝不可当作同一商品替换；新编码必须独立核实。",
+      "C": "当前门店/时段不可售，且**无同名替代编码**。**不得**判定为已下架，只标记「当前不可验证」。",
+      "D": "已确认失效且没有可靠替代编码。阻止其作为可售候选，保留历史信息。"
+    },
+    "evidenceDate": "2026-10-16",
+    "evidenceStore": "3230019",
+    "evidenceStoreName": "麦当劳大连华南餐厅",
+    "evidenceDaypart": "午餐（10:44–14:15）",
+    "detectionMethod": "先用 query-meals 取该门店实时菜单（2026-10-16T10:55:39+08:00），比对旧编码是否仍在售；再对旧编码逐一调用 query-meal-detail 复测（常规菜单时段，排除时段因素），并对新编码调用 query-meal-detail 取真实 rounds 结构逐轮次比对默认项。",
+    "pairs": [
+      {
+        "retiredCode": "9900015162", "retiredName": "牛肉堡单品精选",
+        "currentCode": "9900008747", "currentName": "牛肉堡单品精选",
+        "equivalence": "A",
+        "menuPriceRelation": "一致",
+        "retiredProbe": "query-meal-detail(9900015162) -> 60001 未匹配到商品（2026-10-16T10:48:27+08:00，常规菜单时段）",
+        "newProbe": "query-meal-detail(9900008747) -> success（2026-10-16T10:55:52+08:00）",
+        "defaultCompositionIdentical": true,
+        "evidenceStrength": "强（结构与默认项逐项比对一致 + 旧编码真实失败返回 + 新编码真实成功返回）",
+        "differences": "新编码第 1 轮多一个可选主食 520551 培根芝士双牛堡（+¥10.5）；默认项不变。"
+      },
+      {
+        "retiredCode": "9900015164", "retiredName": "鸡肉堡单品精选",
+        "currentCode": "9900008746", "currentName": "鸡肉堡单品精选",
+        "equivalence": "A",
+        "menuPriceRelation": "一致",
+        "retiredProbe": "query-meal-detail(9900015164) -> 60001 未匹配到商品（2026-10-16T10:55:52+08:00）",
+        "newProbe": "query-meal-detail(9900008746) -> success（2026-10-16T10:55:52+08:00）",
+        "defaultCompositionIdentical": true,
+        "evidenceStrength": "强",
+        "differences": "新编码第 1 轮多一个可选主食 521147 Hold不住鸡排堡（+¥0）；默认项仍为 515295 双层脆鸡堡。"
+      },
+      {
+        "retiredCode": "9900016054", "retiredName": "汉堡开心乐园餐",
+        "currentCode": "9900016057", "currentName": "汉堡开心乐园餐",
+        "equivalence": "A",
+        "menuPriceRelation": "一致",
+        "retiredProbe": "query-meal-detail(9900016054) -> 60001 未匹配到商品（2026-10-16T10:47:37+08:00）",
+        "newProbe": "query-meal-detail(9900016057) -> success（2026-10-16T10:55:52+08:00）",
+        "defaultCompositionIdentical": true,
+        "evidenceStrength": "强（5 个轮次名与默认项逐项一致）；可选项集合不做等价断言（旧条目未逐项记录可选项全集）",
+        "differences": "未发现默认组成差异。"
+      },
+      {
+        "retiredCode": "9900015183", "retiredName": "精选单人餐三件套",
+        "currentCode": "9900004064", "currentName": "精选单人餐三件套",
+        "equivalence": "A",
+        "menuPriceRelation": "一致",
+        "retiredProbe": "未复测（该编码已不在 10:55:39 实时菜单中，且已找到同名同结构替代编码，故未额外消耗一次探测调用）",
+        "newProbe": "query-meal-detail(9900004064) -> success（2026-10-16T10:57:05+08:00）",
+        "defaultCompositionIdentical": true,
+        "evidenceStrength": "中（新编码结构与默认项已核实；旧编码仅有「不在实时菜单中」这一证据，无独立失败返回）",
+        "differences": "新编码第 1 轮可选主食更多（含 1100 巨无霸、520312 原味双层深海鳕鱼堡）；默认项仍为 1406 板烧鸡腿堡。"
+      },
+      {
+        "retiredCode": "9900015160", "retiredName": "大堡口福三件套",
+        "currentCode": "9900015602", "currentName": "大堡口福三件套",
+        "equivalence": "B",
+        "menuPriceRelation": "不同",
+        "retiredProbe": "query-meal-detail(9900015160) -> 60001 未匹配到商品（2026-10-16T10:55:52+08:00）",
+        "newProbe": "query-meal-detail(9900015602) -> success（2026-10-16T10:55:52+08:00）",
+        "defaultCompositionIdentical": false,
+        "evidenceStrength": "强（默认主食已变，属结构性差异）",
+        "differences": "第 1 轮「选择主食」默认项由 515295 双层脆鸡堡 变为 521147 Hold不住鸡排堡（椒盐风味）；菜单价也不同。",
+        "handling": "旧编码已标 retired 并从商品池排除；新编码 9900015602 已作为**独立商品**单独建条目，未沿用旧结论。"
+      },
+      {
+        "retiredCode": "9900015187", "retiredName": "人气经典随心配",
+        "currentCode": "9900013304", "currentName": "人气经典随心配",
+        "equivalence": "B",
+        "menuPriceRelation": "一致",
+        "retiredProbe": "未复测（已不在 10:55:39 实时菜单中）",
+        "newProbe": "query-meal-detail(9900013304) -> success（2026-10-16T10:57:05+08:00）",
+        "defaultCompositionIdentical": false,
+        "evidenceStrength": "强（第 2 轮默认项已变）",
+        "differences": "第 2 轮「粉区」默认项由 515281 阳光柠檬红茶中杯 变为 521328 可乐麦炫酷；第 1 轮蓝区默认仍为 1120 双层吉士汉堡。",
+        "handling": "旧编码已标 retired 并排除；新编码独立建条目。"
+      },
+      {
+        "retiredCode": "9900015188", "retiredName": "精选超值随心配",
+        "currentCode": "9900015568", "currentName": "精选超值随心配",
+        "equivalence": "B",
+        "menuPriceRelation": "不同",
+        "retiredProbe": "未复测（已不在 10:55:39 实时菜单中）",
+        "newProbe": "query-meal-detail(9900015568) -> success（2026-10-16T10:57:05+08:00）",
+        "defaultCompositionIdentical": false,
+        "evidenceStrength": "强（两轮默认项均已变）",
+        "differences": "蓝区默认 521881 马来咖喱风味薄皮肉骨鸡3块 → 521156 那么大鸡排（椒盐风味）；粉区默认 515281 阳光柠檬红茶中杯 → 521336 怡泉+C麦炫酷；菜单价也不同。",
+        "handling": "旧编码已标 retired 并排除；新编码独立建条目。"
+      }
+    ],
+    "unresolved": [
+      {
+        "code": "521143",
+        "name": "4块麦乐鸡",
+        "level": "C",
+        "reason": "该编码出现在 2026-10-16T02:19:53 的宵夜菜单快照中，但 2026-10-16T10:55:39 的午餐菜单里不存在；2026-10-16T10:48:27 复测 query-meal-detail 返回 60001。",
+        "noSuccessor": "午餐菜单中**没有**同名或同价的替代编码（在售的麦乐鸡单品是 1401「麦乐鸡」），因此不是「同名换码」，也不能据此判定该商品已下线。",
+        "conclusion": "**当前时段不可验证**，不得判定为已下架，也不得标记为 retired。需要在其原有时段（宵夜/夜市）复核后才能定级。",
+        "handling": "不在映射表中（原本就只有名称兜底分类），因此无需改动映射表；菜单快照刷新后该编码自然退出测试数据。历史核价记录保留在 tests/test_plan.py 的 REAL_QUOTES 中并已标注。"
+      }
+    ],
+    "codeChangesNotInMap": [
+      {
+        "retiredCode": "9900015165", "retiredName": "派",
+        "currentCode": "9900008752", "currentName": "派",
+        "equivalence": "B",
+        "evidenceStrength": "弱 —— 仅「同名 + 菜单价一致」，**未**比对 rounds 结构，故不判定为等价。",
+        "whyNotInPairs": "两者都是**名称兜底分类**的原子小品，不在 verifiedProducts 中，不涉及任何组成结论，因此不进入 pairs（pairs 只收录会改动映射表 retired 标记的条目）。",
+        "menuPriceRelation": "一致"
+      },
+      {
+        "retiredCode": "521337", "retiredName": "鲜萃冰咖",
+        "currentCode": null, "currentName": null,
+        "equivalence": "C",
+        "evidenceStrength": "弱 —— 该编码不在 2026-10-16T10:55:39 的实时菜单中；同名编码 521327「鲜萃冰咖」只作为**套餐子项**出现，不是顶层菜单商品，因此**没有**可替换的顶层编码。",
+        "whyNotInPairs": "同为名称兜底分类的小品，不在 verifiedProducts 中。",
+        "conclusion": "**当前不可验证**：不得判定为已下架，也不得用子项编码 521327 顶替顶层编码。"
+      }
+    ]
+  },
+  "atomicNameRules": {
+    "usage": "仅用于菜单中未列入 verifiedProducts 的商品的兜底分类。classification=name_inferred_single。这类商品只能满足可选偏好（饮料/小食），永远不能用于满足硬性条件（必须含汉堡）。",
+    "note": "规则顺序自上而下，先命中先返回。每条规则可指定 match：contains（默认，名称包含关键词）或 suffix（名称以关键词结尾）。",
+    "rules": [
+      {
+        "classification": "exclude",
+        "reason": "调味酱，不参与组合",
+        "match": "suffix",
+        "keywords": ["酱"],
+        "note": "必须用 suffix：否则会误伤「蘸酱炸鸡」「蘸酱麦麦脆汁鸡」「蘸酱BFF四宫格小食盘」等真实餐品。此坑已在 2026-10-16 自检中实测踩到并修复。"
+      },
+      {
+        "classification": "exclude",
+        "reason": "周边/非食品，不参与组合",
+        "match": "contains",
+        "keywords": ["玩具", "徽章", "帽", "贴", "捶", "痒痒挠", "餐具", "周边"]
+      },
+      {
+        "classification": "drink",
+        "keywords": ["可乐", "雪碧", "雪冰", "咖啡", "美式", "奶铁", "拿铁", "卡布奇诺", "牛奶", "燕麦奶", "苹果汁", "果汁", "橙橙", "柠柠", "红茶", "绿茶", "豆浆", "怡泉", "阿芙佳朵", "朱古力", "黑巧", "抹茶"]
+      },
+      {
+        "classification": "side",
+        "keywords": ["薯条", "薯格", "麦乐鸡", "鸡块", "鸡翅", "V翅", "炸鸡", "脆汁鸡", "肉骨鸡", "鸡柳", "鸡米花", "芝士条", "薯饼", "派", "苹果片", "玉米杯", "麦旋风", "新地", "圆筒", "鸡排", "趣鸡球", "多多笋卷", "叠叠卷", "沙拉"],
+        "note": "刻意不包含泛化的「鸡」字：那会把汉堡类的「麦香鸡」误判为小食。"
+      },
+      {
+        "classification": "burger_name_inferred",
+        "keywords": ["汉堡", "堡", "麦香鸡", "巨无霸", "板烧"],
+        "warning": "仅作标注，不进入硬性条件候选池。"
+      }
+    ]
+  },
+  "knownNameTraps": [
+    { "pattern": "名称含“堡”但未必含汉堡", "note": "本表中未发现此类反例，但“堡”字仍不足以作为硬性条件依据。" },
+    { "pattern": "名称不含“堡”但实际含汉堡", "examples": ["9900015183 精选单人餐三件套"], "note": "必须查 detail 才能确认。" },
+    { "pattern": "名称像正餐套餐但完全不含汉堡", "examples": ["9900011126 酥脆无双套餐", "9900011123 “辣”么快乐套餐", "9900004835 麦乐鸡套餐"], "note": "不得凭名称纳入含汉堡候选。" },
+    { "pattern": "菜单名与详情名不一致", "examples": ["9900004835：菜单“麦乐鸡套餐” / 详情“麦乐鸡经典中套餐”"], "note": "主键必须是 code。" },
+    { "pattern": "套餐子项编码与顶层菜单编码不同源", "examples": ["套餐内可乐中杯=3050，顶层可乐=9900008751", "套餐内小薯条=4800，顶层中薯条=4810"], "note": "不得把子项 code 当作顶层商品 code 使用。" },
+    { "pattern": "**编码会轮换：同一商品换新 code**", "examples": ["9900015162→9900008747", "9900015160→9900015602", "9900016054→9900016057"], "note": "同名不等价。换码后必须重新查 detail，不得沿用旧编码的组成结论；旧编码标 retired 并从商品池排除。详见顶层 codeRotation。" }
+  ]
+}
