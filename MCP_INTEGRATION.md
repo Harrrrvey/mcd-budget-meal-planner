@@ -465,7 +465,7 @@ beCode    = 不传 # 到店自取场景必须不传；传了会报错
 ### 7.13 ✅ 自然语言触发与端到端自动编排验证（2026-10-16 14:05–14:17，P1.14）
 
 - **触发证据**：以用户输入「帮我配一份 30 元以内的麦当劳午餐。」经 Skill 入口触发，
-  返回 `Base directory: /Users/panhaoren/.workbuddy/skills/mcd-budget-meal-planner`；
+  返回 `Base directory: ~/.workbuddy/skills/mcd-budget-meal-planner`；
   该路径为**指向项目根目录的软链接**，且 `SKILL.md` / `plan.py` / `product-map.json`
   三份哈希与项目文件一致 → 执行的是本轮代码。
 - **场景 1 全链路**：`query-nearby-stores` → `query-meals`（106 项午餐）→ 3 个券查询（全空）→

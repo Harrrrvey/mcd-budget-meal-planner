@@ -6,7 +6,7 @@
 - **开发工具**：腾讯 WorkBuddy
 - **开发时间**：2026-10-16
 - **开发模式**：Agent 模式（WorkBuddy 自主执行）
-- **工作目录**：`/Users/panhaoren/Documents/项目/麦当劳skill/`
+- **工作目录**：`项目仓库根目录（mcd-budget-meal-planner）`
 
 ---
 

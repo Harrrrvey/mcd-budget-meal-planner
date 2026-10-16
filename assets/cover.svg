@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" font-family="'Songti SC','STSong','SimSun','Noto Serif CJK SC',Georgia,serif">
+  <!-- 暖白底 + 充足留白 -->
+  <rect width="1200" height="500" fill="#FBF6EF"/>
+  <circle cx="958" cy="250" r="205" fill="#F0E6D7"/>
+
+  <!-- 原创扁平插画：汉堡 + 预算硬币（不使用任何品牌标识/拱形/品牌色） -->
+  <g>
+    <!-- 顶部面包 -->
+    <path d="M818,250 C818,148 1082,148 1082,250 Z" fill="#E9C9A1"/>
+    <!-- 芝麻 -->
+    <g fill="#F4E4CC">
+      <ellipse cx="880" cy="200" rx="6" ry="3.4" transform="rotate(-18 880 200)"/>
+      <ellipse cx="940" cy="178" rx="6" ry="3.4" transform="rotate(6 940 178)"/>
+      <ellipse cx="1000" cy="200" rx="6" ry="3.4" transform="rotate(20 1000 200)"/>
+      <ellipse cx="910" cy="222" rx="6" ry="3.4" transform="rotate(-8 910 222)"/>
+      <ellipse cx="970" cy="222" rx="6" ry="3.4" transform="rotate(12 970 222)"/>
+    </g>
+    <!-- 生菜（波浪边） -->
+    <path d="M820,250 q16,-13 32,0 q16,-13 32,0 q16,-13 32,0 q16,-13 32,0 q16,-13 32,0 q16,-13 32,0 q16,-13 32,0 q16,-13 32,0 l0,12 -256,0 z" fill="#9DBE76"/>
+    <!-- 肉饼 -->
+    <rect x="826" y="262" width="248" height="30" rx="14" fill="#8A5A38"/>
+    <!-- 底部面包 -->
+    <ellipse cx="950" cy="300" rx="128" ry="22" fill="#E9C9A1"/>
+  </g>
+
+  <!-- 预算硬币（提示“预算”） -->
+  <g>
+    <circle cx="1086" cy="150" r="46" fill="#E2B33C"/>
+    <circle cx="1086" cy="150" r="46" fill="none" stroke="#C79321" stroke-width="3"/>
+    <text x="1086" y="166" text-anchor="middle" font-size="46" fill="#FFFFFF" font-family="Georgia,serif">¥</text>
+  </g>
+
+  <!-- 左侧文字 -->
+  <text x="70" y="172" font-size="60" fill="#23201C">麦麦预算点餐师</text>
+  <text x="72" y="212" font-size="26" fill="#6E6A63" font-family="Georgia,serif">McDonald's Budget Meal Planner</text>
+
+  <text x="72" y="272" font-size="23" fill="#4A463F">在预算内，用麦当劳官方实时核价，</text>
+  <text x="72" y="304" font-size="23" fill="#4A463F">帮你搭出含汉堡的一餐。</text>
+
+  <!-- 标签 -->
+  <g>
+    <rect x="72" y="346" width="232" height="46" rx="23" fill="#FFFFFF" stroke="#D8CBB5" stroke-width="1.5"/>
+    <text x="188" y="375" text-anchor="middle" font-size="20" fill="#23201C">WorkBuddy Skill</text>
+
+    <rect x="320" y="346" width="372" height="46" rx="23" fill="#FFFFFF" stroke="#D8CBB5" stroke-width="1.5"/>
+    <text x="506" y="375" text-anchor="middle" font-size="18" fill="#6E6A63">麦当劳开发者创新挑战赛 · 参赛作品</text>
+  </g>
+</svg>

@@ -19,8 +19,8 @@
 ## 一、自动化测试
 
 ```bash
-python3 scripts/plan.py selftest    # 21/21 通过
-python3 tests/test_plan.py          # 82/82 通过
+python3 scripts/plan.py selftest    # 30/30 通过
+python3 tests/test_plan.py          # 1119/1119 通过
 ```
 
 覆盖：映射表不含价格、名称推断商品不得满足硬性条件、已知反例排除、预算约束、商品不重复、饮料上限、核价解析（含失败路径）、三个预算场景端到端、超预算拒绝、无解说明。
@@ -1400,8 +1400,8 @@ python3 tests/test_coupons.py        # 83/83 通过（新增）
 ### 16.3 Skill 触发证据（REAL_END_TO_END 的一环）
 
 - 通过 Skill 入口以用户输入 **「帮我配一份 30 元以内的麦当劳午餐。」** 触发；
-- 返回 `Base directory for this skill: /Users/panhaoren/.workbuddy/skills/mcd-budget-meal-planner`；
-- 该路径为**指向 `/Users/panhaoren/Documents/项目/麦当劳skill` 的软链接**，
+- 返回 `Base directory for this skill: ~/.workbuddy/skills/mcd-budget-meal-planner`；
+- 该路径为**指向项目仓库根目录（`mcd-budget-meal-planner`）的软链接**，
   且 `SKILL.md` / `scripts/plan.py` / `references/product-map.json` 三份哈希与项目文件**完全一致**
   → 证明触发时执行的是本轮代码，不是陈旧副本。
 
